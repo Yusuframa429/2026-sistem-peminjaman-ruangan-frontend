@@ -1,73 +1,45 @@
-# React + TypeScript + Vite
+# Sistem Peminjaman Ruangan - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Repository ini berisi source code frontend untuk Sistem Peminjaman Ruangan. Aplikasi ini dibangun menggunakan React, TypeScript, dan Vite sebagai build tool, serta Tailwind CSS untuk styling antarmuka.
 
-Currently, two official plugins are available:
+## Deskripsi Proyek
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Aplikasi ini berfungsi sebagai antarmuka pengguna (Client-side) untuk mengelola proses peminjaman ruangan. Aplikasi ini berinteraksi dengan REST API Backend untuk melakukan operasi CRUD (Create, Read, Update, Delete), pencarian data, penyaringan status, dan pengurutan data peminjaman.
 
-## React Compiler
+## Fitur Utama
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Aplikasi ini mencakup fungsionalitas berikut:
 
-## Expanding the ESLint configuration
+* **Manajemen Data Peminjaman:** Pengguna dapat melihat daftar peminjaman, mengajukan peminjaman baru, serta mengubah atau menghapus data peminjaman.
+* **Pencarian Lanjut (Advanced Search):** Fitur pencarian data berdasarkan nama peminjam atau keperluan kegiatan secara real-time.
+* **Penyaringan Data (Filtering):** Kemampuan untuk menyaring daftar peminjaman berdasarkan status (Menunggu, Disetujui, Ditolak).
+* **Pengurutan Data (Sorting):** Fitur pengurutan data berdasarkan tanggal (terbaru/terlama) dan nama peminjam (A-Z/Z-A).
+* **Manajemen Status:** Admin dapat melakukan validasi (persetujuan atau penolakan) terhadap pengajuan peminjaman.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Teknologi yang Digunakan
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* **Core:** React (v18+), TypeScript
+* **Build Tool:** Vite
+* **Styling:** Tailwind CSS
+* **HTTP Client:** Axios
+* **Routing:** React Router DOM
+* **Linting:** ESLint
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Prasyarat (Prerequisites)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Sebelum menjalankan aplikasi ini, pastikan sistem Anda memiliki:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1.  **Node.js** (Versi 18.0.0 atau lebih baru)
+2.  **npm** (Node Package Manager)
+3.  **Backend Service:** Pastikan repository Backend sudah dijalankan pada port yang sesuai.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Panduan Instalasi dan Menjalankan Aplikasi
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Ikuti langkah-langkah berikut untuk menjalankan proyek di lingkungan lokal:
+
+### 1. Clone Repository
+Unduh source code ke dalam mesin lokal Anda.
+
+```bash
+git clone [https://github.com/Yusuframa429/2026-sistem-peminjaman-ruangan-frontend.git](https://github.com/Yusuframa429/2026-sistem-peminjaman-ruangan-frontend.git)
+cd 2026-sistem-peminjaman-ruangan-frontend
