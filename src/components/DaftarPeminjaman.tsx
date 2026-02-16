@@ -1,25 +1,22 @@
 import { useEffect, useState } from "react";
 import api from "../api/axiosInstance";
 import type { Peminjaman } from "../types";
-import { Trash2, CheckCircle, XCircle, Search, Filter } from "lucide-react";
+import { Trash2, CheckCircle, XCircle, Filter } from "lucide-react";
 
 export default function DaftarPeminjaman() {
     const [dataPeminjaman, setDataPeminjaman] = useState<Peminjaman[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // State untuk Fitur Pencarian & Filter
     const [keyword, setKeyword] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
 
-    // Fungsi ambil data dengan Parameter (Query)
     const fetchData = () => {
         setLoading(true);
 
-        // Kita kirim parameter q (pencarian) dan status (filter) ke Backend
         api.get("/Peminjaman", {
             params: {
-                q: keyword,           // Sesuai codingan backend (string? q)
-                status: statusFilter  // Sesuai codingan backend (string? status)
+                q: keyword,
+                status: statusFilter
             }
         })
             .then((response) => {
@@ -69,14 +66,11 @@ export default function DaftarPeminjaman() {
 
             {/* --- AREA PENCARIAN & FILTER --- */}
             <div className="flex flex-col md:flex-row gap-4 mb-6">
-
-                {/* Input Pencarian */}
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                <div className="flex-1">
                     <input
                         type="text"
-                        placeholder="Cari nama peminjam atau ruangan..."
-                        className="w-full pl-10 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                        placeholder="🔍 Cari nama peminjam atau keperluan..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                     />
@@ -86,14 +80,14 @@ export default function DaftarPeminjaman() {
                 <div className="relative">
                     <Filter className="absolute left-3 top-3 text-gray-400" size={20} />
                     <select
-                        className="pl-10 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
                         <option value="">Semua Status</option>
-                        <option value="Menunggu">Menunggu</option>
-                        <option value="Disetujui">Disetujui</option>
-                        <option value="Ditolak">Ditolak</option>
+                        <option value="Menunggu">⏳ Menunggu</option>
+                        <option value="Disetujui">✅ Disetujui</option>
+                        <option value="Ditolak">❌ Ditolak</option>
                     </select>
                 </div>
 
@@ -134,7 +128,7 @@ export default function DaftarPeminjaman() {
 
                                     <td className="p-3 text-center">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold border 
-                      ${item.status === 'Disetujui' ? 'bg-green-100 text-green-700 border-green-200' :
+                                        ${item.status === 'Disetujui' ? 'bg-green-100 text-green-700 border-green-200' :
                                                 item.status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-200' :
                                                     'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
                                             {item.status}
