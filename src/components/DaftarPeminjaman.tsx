@@ -3,7 +3,6 @@ import { usePeminjaman } from "../hooks/usePeminjaman";
 import { Trash2, CheckCircle, XCircle, ArrowUpDown, Clock, History } from "lucide-react";
 
 export default function DaftarPeminjaman() {
-    // Panggil Hook Sakti
     const {
         data, loading,
         keyword, setKeyword,
@@ -12,65 +11,49 @@ export default function DaftarPeminjaman() {
         fetchData, handleDelete, handleStatus
     } = usePeminjaman();
 
-    // State untuk Tab (Active = Menunggu, History = Selesai)
     const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
 
-    // Logika Tab:
-    // Kalau Tab 'active', kita paksa filter 'Menunggu' lewat API biar cepat.
-    // Kalau Tab 'history', kita ambil semua ('') lalu filter manual di bawah (exclude Menunggu).
     const handleTabChange = (tab: 'active' | 'history') => {
         setActiveTab(tab);
         if (tab === 'active') {
             setStatusFilter("Menunggu");
         } else {
-            setStatusFilter(""); // Ambil semua data dulu
+            setStatusFilter("");
         }
     };
 
-    // Filter Data untuk Tab History (Membuang yang statusnya 'Menunggu')
-    // Karena API kita belum punya fitur "Get Not Menunggu", kita filter di sini.
-    const filteredData = activeTab === 'history' 
-        ? data.filter(item => item.status !== 'Menunggu') 
-        : data; // Kalau active, datanya sudah difilter API jadi 'Menunggu' saja
+    const filteredData = activeTab === 'history'
+        ? data.filter(item => item.status !== 'Menunggu')
+        : data;
 
     return (
         <div className="max-w-6xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg mb-20 border-t-4 border-blue-600">
-            
-            {/* HEADER & TABS */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
                 <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     📅 Dashboard Peminjaman
                 </h2>
-                
-                {/* TOMBOL TAB NAVIGASI */}
                 <div className="flex bg-gray-100 p-1 rounded-lg mt-4 md:mt-0">
                     <button
                         onClick={() => handleTabChange('active')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${
-                            activeTab === 'active' 
-                            ? "bg-white text-blue-600 shadow-sm" 
-                            : "text-gray-500 hover:text-gray-700"
-                        }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${activeTab === 'active'
+                                ? "bg-white text-blue-600 shadow-sm"
+                                : "text-gray-500 hover:text-gray-700"
+                            }`}
                     >
                         <Clock size={16} /> Perlu Diproses
                     </button>
                     <button
                         onClick={() => handleTabChange('history')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${
-                            activeTab === 'history' 
-                            ? "bg-white text-blue-600 shadow-sm" 
-                            : "text-gray-500 hover:text-gray-700"
-                        }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${activeTab === 'history'
+                                ? "bg-white text-blue-600 shadow-sm"
+                                : "text-gray-500 hover:text-gray-700"
+                            }`}
                     >
                         <History size={16} /> Riwayat Arsip
                     </button>
                 </div>
             </div>
-
-            {/* BARIS TOOLBAR (Search & Sort) */}
             <div className="flex flex-col md:flex-row gap-3 mb-6">
-                
-                {/* 1. INPUT PENCARIAN */}
                 <div className="flex-1 flex gap-2">
                     <input
                         type="text"
@@ -83,8 +66,6 @@ export default function DaftarPeminjaman() {
                         Cari
                     </button>
                 </div>
-
-                {/* 2. FILTER KHUSUS (Cuma muncul di Tab History) */}
                 {activeTab === 'history' && (
                     <div className="relative w-full md:w-48">
                         <select
@@ -98,8 +79,6 @@ export default function DaftarPeminjaman() {
                         </select>
                     </div>
                 )}
-
-                {/* 3. SORTING */}
                 <div className="relative w-full md:w-48">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                         <ArrowUpDown className="text-gray-400" size={16} />
@@ -116,8 +95,6 @@ export default function DaftarPeminjaman() {
                     </select>
                 </div>
             </div>
-
-            {/* TABEL DATA */}
             <div className="overflow-x-auto rounded-lg border border-gray-200">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-bold tracking-wider">
@@ -162,7 +139,6 @@ export default function DaftarPeminjaman() {
                                     </td>
                                     <td className="p-4 text-center">
                                         <div className="flex justify-center gap-2">
-                                            {/* Tombol Action Cuma Muncul di Tab Active */}
                                             {activeTab === 'active' && (
                                                 <>
                                                     <button onClick={() => handleStatus(item.id, "Disetujui")} title="Setujui" className="p-2 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-lg transition shadow-sm border border-green-200">
@@ -173,8 +149,6 @@ export default function DaftarPeminjaman() {
                                                     </button>
                                                 </>
                                             )}
-                                            
-                                            {/* Tombol Hapus Selalu Ada */}
                                             <button onClick={() => handleDelete(item.id)} title="Hapus Data" className="p-2 bg-gray-50 text-gray-400 hover:bg-red-500 hover:text-white rounded-lg transition ml-2 border border-gray-200">
                                                 <Trash2 size={18} />
                                             </button>

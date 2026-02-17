@@ -1,4 +1,4 @@
-// src/hooks/usePeminjaman.ts
+
 import { useState, useEffect } from "react";
 import { peminjamanService } from "../services/peminjamanService";
 import { type Peminjaman } from "../types";
@@ -6,11 +6,11 @@ import { type Peminjaman } from "../types";
 export const usePeminjaman = () => {
     const [data, setData] = useState<Peminjaman[]>([]);
     const [loading, setLoading] = useState(true);
-    
+
     const [keyword, setKeyword] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [sortOrder, setSortOrder] = useState("");
-    
+
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -26,11 +26,11 @@ export const usePeminjaman = () => {
             setLoading(false);
         }
     };
-    
+
     useEffect(() => {
         fetchData();
     }, [statusFilter, sortOrder]);
-    
+
     const handleDelete = async (id: number) => {
         if (window.confirm("Yakin mau hapus data ini?")) {
             try {
@@ -42,7 +42,6 @@ export const usePeminjaman = () => {
         }
     };
 
-    // Handle Status Update
     const handleStatus = async (id: number, statusBaru: string) => {
         try {
             await peminjamanService.updateStatus(id, statusBaru);
@@ -52,7 +51,6 @@ export const usePeminjaman = () => {
         }
     };
 
-    // Return semua yang dibutuhkan UI
     return {
         data,
         loading,
