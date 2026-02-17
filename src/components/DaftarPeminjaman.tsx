@@ -1,150 +1,184 @@
-import { useEffect, useState } from "react";
-import api from "../api/axiosInstance";
-import type { Peminjaman } from "../types";
-import { Trash2, CheckCircle, XCircle, Search, Filter } from "lucide-react";
+import { useState } from "react";
+import { usePeminjaman } from "../hooks/usePeminjaman";
+import { Trash2, CheckCircle, XCircle, ArrowUpDown, Clock, History } from "lucide-react";
 
 export default function DaftarPeminjaman() {
-    const [dataPeminjaman, setDataPeminjaman] = useState<Peminjaman[]>([]);
-    const [loading, setLoading] = useState(true);
+    // Panggil Hook Sakti
+    const {
+        data, loading,
+        keyword, setKeyword,
+        statusFilter, setStatusFilter,
+        sortOrder, setSortOrder,
+        fetchData, handleDelete, handleStatus
+    } = usePeminjaman();
 
-    // State untuk Fitur Pencarian & Filter
-    const [keyword, setKeyword] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
+    // State untuk Tab (Active = Menunggu, History = Selesai)
+    const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
 
-    // Fungsi ambil data dengan Parameter (Query)
-    const fetchData = () => {
-        setLoading(true);
-
-        // Kita kirim parameter q (pencarian) dan status (filter) ke Backend
-        api.get("/Peminjaman", {
-            params: {
-                q: keyword,           // Sesuai codingan backend (string? q)
-                status: statusFilter  // Sesuai codingan backend (string? status)
-            }
-        })
-            .then((response) => {
-                setDataPeminjaman(response.data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error("Gagal narik data:", error);
-                setLoading(false);
-            });
-    };
-
-    // Panggil data pertama kali saat halaman dibuka
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    // Fungsi Hapus
-    const handleDelete = async (id: number) => {
-        if (window.confirm("Yakin mau hapus data ini?")) {
-            try {
-                await api.delete(`/Peminjaman/${id}`);
-                fetchData();
-            } catch (error) {
-                alert("Gagal menghapus data!");
-            }
+    // Logika Tab:
+    // Kalau Tab 'active', kita paksa filter 'Menunggu' lewat API biar cepat.
+    // Kalau Tab 'history', kita ambil semua ('') lalu filter manual di bawah (exclude Menunggu).
+    const handleTabChange = (tab: 'active' | 'history') => {
+        setActiveTab(tab);
+        if (tab === 'active') {
+            setStatusFilter("Menunggu");
+        } else {
+            setStatusFilter(""); // Ambil semua data dulu
         }
     };
 
-    // Fungsi Update Status
-    const handleStatus = async (id: number, statusBaru: string) => {
-        try {
-            await api.put(`/Peminjaman/${id}/status`, JSON.stringify(statusBaru), {
-                headers: { "Content-Type": "application/json" },
-            });
-            fetchData();
-        } catch (error) {
-            alert("Gagal update status!");
-        }
-    };
+    // Filter Data untuk Tab History (Membuang yang statusnya 'Menunggu')
+    // Karena API kita belum punya fitur "Get Not Menunggu", kita filter di sini.
+    const filteredData = activeTab === 'history' 
+        ? data.filter(item => item.status !== 'Menunggu') 
+        : data; // Kalau active, datanya sudah difilter API jadi 'Menunggu' saja
 
     return (
         <div className="max-w-6xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg mb-20 border-t-4 border-blue-600">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-                📅 Daftar Peminjaman Ruangan
-            </h2>
+            
+            {/* HEADER & TABS */}
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    📅 Dashboard Peminjaman
+                </h2>
+                
+                {/* TOMBOL TAB NAVIGASI */}
+                <div className="flex bg-gray-100 p-1 rounded-lg mt-4 md:mt-0">
+                    <button
+                        onClick={() => handleTabChange('active')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${
+                            activeTab === 'active' 
+                            ? "bg-white text-blue-600 shadow-sm" 
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    >
+                        <Clock size={16} /> Perlu Diproses
+                    </button>
+                    <button
+                        onClick={() => handleTabChange('history')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-bold transition-all ${
+                            activeTab === 'history' 
+                            ? "bg-white text-blue-600 shadow-sm" 
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    >
+                        <History size={16} /> Riwayat Arsip
+                    </button>
+                </div>
+            </div>
 
-            {/* --- AREA PENCARIAN & FILTER --- */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-
-                {/* Input Pencarian */}
-                <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+            {/* BARIS TOOLBAR (Search & Sort) */}
+            <div className="flex flex-col md:flex-row gap-3 mb-6">
+                
+                {/* 1. INPUT PENCARIAN */}
+                <div className="flex-1 flex gap-2">
                     <input
                         type="text"
-                        placeholder="Cari nama peminjam atau ruangan..."
-                        className="w-full pl-10 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                        placeholder="🔍 Cari nama peminjam / keperluan..."
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                     />
+                    <button onClick={fetchData} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition">
+                        Cari
+                    </button>
                 </div>
 
-                {/* Dropdown Filter Status */}
-                <div className="relative">
-                    <Filter className="absolute left-3 top-3 text-gray-400" size={20} />
+                {/* 2. FILTER KHUSUS (Cuma muncul di Tab History) */}
+                {activeTab === 'history' && (
+                    <div className="relative w-full md:w-48">
+                        <select
+                            className="w-full px-4 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="">📂 Semua Arsip</option>
+                            <option value="Disetujui">✅ Disetujui</option>
+                            <option value="Ditolak">❌ Ditolak</option>
+                        </select>
+                    </div>
+                )}
+
+                {/* 3. SORTING */}
+                <div className="relative w-full md:w-48">
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <ArrowUpDown className="text-gray-400" size={16} />
+                    </div>
                     <select
-                        className="pl-10 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 bg-white"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
                     >
-                        <option value="">Semua Status</option>
-                        <option value="Menunggu">Menunggu</option>
-                        <option value="Disetujui">Disetujui</option>
-                        <option value="Ditolak">Ditolak</option>
+                        <option value="">📅 Terbaru</option>
+                        <option value="terlama">📅 Terlama</option>
+                        <option value="nama_az">🔤 Nama (A-Z)</option>
+                        <option value="nama_za">🔤 Nama (Z-A)</option>
                     </select>
                 </div>
-
-                {/* Tombol Cari */}
-                <button
-                    onClick={fetchData}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 font-bold transition"
-                >
-                    Cari Data
-                </button>
             </div>
 
-            {/* --- TABEL DATA --- */}
-            <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-200">
-                    <thead className="bg-gray-100 text-gray-700">
+            {/* TABEL DATA */}
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <table className="w-full text-left border-collapse">
+                    <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-bold tracking-wider">
                         <tr>
-                            <th className="p-3 text-left">Peminjam</th>
-                            <th className="p-3 text-left">Ruangan</th>
-                            <th className="p-3 text-left">Tanggal</th>
-                            <th className="p-3 text-left">Keperluan</th>
-                            <th className="p-3 text-center">Status</th>
-                            <th className="p-3 text-center">Aksi</th>
+                            <th className="p-4">Peminjam</th>
+                            <th className="p-4">Ruangan</th>
+                            <th className="p-4">Tanggal & Keperluan</th>
+                            <th className="p-4">Status</th>
+                            <th className="p-4 text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-200 bg-white">
                         {loading ? (
-                            <tr><td colSpan={6} className="p-5 text-center">Sedang mencari...</td></tr>
-                        ) : dataPeminjaman.length === 0 ? (
-                            <tr><td colSpan={6} className="p-5 text-center text-gray-500">Data tidak ditemukan.</td></tr>
+                            <tr><td colSpan={5} className="p-8 text-center text-gray-500 animate-pulse">Sedang memuat data...</td></tr>
+                        ) : filteredData.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="p-8 text-center flex flex-col items-center justify-center text-gray-400">
+                                    <span className="text-4xl mb-2">📭</span>
+                                    {activeTab === 'active' ? "Tidak ada permohonan baru." : "Belum ada riwayat peminjaman."}
+                                </td>
+                            </tr>
                         ) : (
-                            dataPeminjaman.map((item) => (
-                                <tr key={item.id} className="border-b hover:bg-blue-50 transition">
-                                    <td className="p-3 font-semibold">{item.namaPeminjam}</td>
-                                    <td className="p-3">{item.ruangan}</td>
-                                    <td className="p-3 text-sm">{new Date(item.tanggalPeminjaman).toLocaleDateString()}</td>
-                                    <td className="p-3 text-sm text-gray-600">{item.keperluan}</td>
-
-                                    <td className="p-3 text-center">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold border 
-                      ${item.status === 'Disetujui' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                item.status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-200' :
-                                                    'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
-                                            {item.status}
+                            filteredData.map((item) => (
+                                <tr key={item.id} className="hover:bg-blue-50 transition duration-150">
+                                    <td className="p-4 font-semibold text-gray-800">
+                                        {item.namaPeminjam}
+                                    </td>
+                                    <td className="p-4 text-gray-600 font-medium">{item.ruangan}</td>
+                                    <td className="p-4">
+                                        <div className="text-sm font-bold text-gray-700">
+                                            {new Date(item.tanggalPeminjaman).toLocaleDateString("id-ID", { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1 italic">"{item.keperluan}"</div>
+                                    </td>
+                                    <td className="p-4">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
+                                        ${item.status === 'Disetujui' ? 'bg-green-100 text-green-800 border-green-200' :
+                                                item.status === 'Ditolak' ? 'bg-red-100 text-red-800 border-red-200' :
+                                                    'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
+                                            {item.status === 'Menunggu' ? '⏳ Menunggu' : item.status === 'Disetujui' ? '✅ Disetujui' : '❌ Ditolak'}
                                         </span>
                                     </td>
-
-                                    <td className="p-3 text-center flex justify-center gap-2">
-                                        <button onClick={() => handleStatus(item.id, "Disetujui")} className="text-green-600 hover:text-green-800" title="Terima"><CheckCircle size={20} /></button>
-                                        <button onClick={() => handleStatus(item.id, "Ditolak")} className="text-red-600 hover:text-red-800" title="Tolak"><XCircle size={20} /></button>
-                                        <button onClick={() => handleDelete(item.id)} className="text-gray-400 hover:text-red-600 ml-2" title="Hapus"><Trash2 size={20} /></button>
+                                    <td className="p-4 text-center">
+                                        <div className="flex justify-center gap-2">
+                                            {/* Tombol Action Cuma Muncul di Tab Active */}
+                                            {activeTab === 'active' && (
+                                                <>
+                                                    <button onClick={() => handleStatus(item.id, "Disetujui")} title="Setujui" className="p-2 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-lg transition shadow-sm border border-green-200">
+                                                        <CheckCircle size={18} />
+                                                    </button>
+                                                    <button onClick={() => handleStatus(item.id, "Ditolak")} title="Tolak" className="p-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition shadow-sm border border-red-200">
+                                                        <XCircle size={18} />
+                                                    </button>
+                                                </>
+                                            )}
+                                            
+                                            {/* Tombol Hapus Selalu Ada */}
+                                            <button onClick={() => handleDelete(item.id)} title="Hapus Data" className="p-2 bg-gray-50 text-gray-400 hover:bg-red-500 hover:text-white rounded-lg transition ml-2 border border-gray-200">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
